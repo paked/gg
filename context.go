@@ -560,7 +560,7 @@ func (dc *Context) LoadFontFace(path string, points float64) error {
 	if err == nil {
 		dc.fontFace = face
 		dc.fontHeight = points * 72 / 96
-	} 
+	}
 	return err
 }
 
@@ -631,6 +631,28 @@ func (dc *Context) MeasureString(s string) (w, h float64) {
 	}
 	a := d.MeasureString(s)
 	return float64(a >> 6), dc.fontHeight
+}
+
+// MeasureStringWrapped returns the rendered width and height of the specified text while
+// wrapped using the current font face.
+func (dc *Context) MeasureStringWrapped(s string, width, lineSpacing float64) (w, h float64) {
+	lines := dc.WordWrap(s, width)
+	for _, line := range lines {
+		mw, mh := dc.MeasureString(line)
+		if mw > w {
+			w = mw
+		}
+		if mh > h {
+			h = mh
+		}
+	}
+
+	h = float64(len(lines)) * (dc.fontHeight + lineSpacing)
+	if len(lines) != 0 {
+		h -= lineSpacing
+	}
+
+	return w, h
 }
 
 // WordWrap wraps the specified string to the given max width and current
